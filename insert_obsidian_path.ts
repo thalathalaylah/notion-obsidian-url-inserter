@@ -15,6 +15,7 @@ const databaseId = conf["DATABASE_ID"]
 const port = Number(conf["PORT"])
 const filenameColumn = conf["FILENAME_COLUMN"]
 const updateColumnName = conf["UPDATE_COLUMN"]
+const obsidianDirectory = conf["OBSIDIAN_DIRECTORY"]
 
 const res = await getRowByQuery(
     token,
@@ -33,5 +34,5 @@ const res = await getRowByQuery(
 )
 
 // filenameColumnはnotionの左端のカラムの名前であることを期待している
-const urls = createObsidianUrl(res.results.map(v => v.properties[filenameColumn].title[0].plain_text), port)
+const urls = createObsidianUrl(res.results.map(v => v.properties[filenameColumn].title[0].plain_text), port, obsidianDirectory)
 res.results.map((v, i) => updatePage(token, updateColumnName,  v.id, urls[i]))
