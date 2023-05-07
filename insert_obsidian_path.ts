@@ -2,6 +2,7 @@ import { config } from "https://deno.land/x/dotenv/mod.ts";
 import {getRowByQuery} from "./methods/query_database.ts";
 import {createObsidianUrl} from "./methods/obsidian_url.ts";
 import {updatePage} from "./methods/update_page.ts";
+import {createObsidianFilesIfNotExist} from "./methods/create_files_if_not_exist.ts";
 
 const conf = config()
 
@@ -16,6 +17,7 @@ const port = Number(conf["PORT"])
 const filenameColumn = conf["FILENAME_COLUMN"]
 const updateColumnName = conf["UPDATE_COLUMN"]
 const obsidianDirectory = conf["OBSIDIAN_DIRECTORY"]
+const obsidianPath = conf["OBSIDIAN_PATH"]
 
 const res = await getRowByQuery(
     token,
@@ -32,7 +34,11 @@ const res = await getRowByQuery(
         }
     }
 )
-
 // filenameColumnはnotionの左端のカラムの名前であることを期待している
-const urls = createObsidianUrl(res.results.map(v => v.properties[filenameColumn].title[0].plain_text), port, obsidianDirectory)
+console.log(res.results.map(v => v.properties[filenameColumn]))
+const filenames = res.results.map(v => v.properties[filenameColumn].title[0].plain_text)
+
+await createObsidianFilesIfNotExist(filenames, obsidianPath + obsidianDirectory)
+
+const urls = createObsidianUrl(filenames, port, obsidianDirectory)
 res.results.map((v, i) => updatePage(token, updateColumnName,  v.id, urls[i]))
